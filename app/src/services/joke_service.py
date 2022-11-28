@@ -20,13 +20,14 @@ class DBSessionMixin:
 
 
 class JokeDataAccess(DBSessionMixin):
-    def create_item(self, joke_create: JokeCreate) -> JokeModel:
+    def create_item(self, joke_create: JokeCreate):
         item = JokeModel(**joke_create.dict())
         self.session.add(item)
         self.session.commit()
+        self.session.refresh(item)
         return item
 
-    def get_item_by_number(self, number) -> JokeModel:
+    def get_item_by_number(self, number):
         item = self.session.query(JokeModel).filter(JokeModel.number == number).first()
         return item
 
@@ -43,20 +44,19 @@ class JokeDataAccess(DBSessionMixin):
         return True
 
 
-class JokeService(JokeDataAccess):
+class JokeService(DBSessionMixin):
     def create_joke(self, joke_params: JokeParams):
         try:
 
-            joke = self.get_item_by_number(joke_params.number)
+            joke = JokeDataAccess(self.session).get_item_by_number(joke_params.number)
 
             status_code = 200
             message = 'This joke has been created'
 
             if not joke:
-
                 now = int(time.time())
                 joke_create = JokeCreate(**joke_params.dict(), created_at=now, updated_at=now)
-                joke = self.create_item(joke_create)
+                joke = JokeDataAccess(self.session).create_item(joke_create)
 
                 status_code = 201
                 message = 'Create Success'
@@ -74,12 +74,13 @@ class JokeService(JokeDataAccess):
 
     def update_joke(self, joke_params: JokeParams):
         try:
-            joke = self.get_item_by_number(joke_params.number)
+            joke = JokeDataAccess(self.session).get_item_by_number(joke_params.number)
 
             if not joke:
                 raise Exception("This Joke doesn't exist")
 
-            joke = self.update_item_by_number(JokeUpdate(**joke_params.dict(), updated_at=int(time.time())))
+            joke_update = JokeUpdate(**joke_params.dict(), updated_at=int(time.time()))
+            joke = JokeDataAccess(self.session).update_item_by_number(joke_update)
 
             return JokeResponse(
                 status_code=200,
@@ -94,16 +95,16 @@ class JokeService(JokeDataAccess):
 
     def delete_joke(self, joke_params: JokeParams):
         try:
-            joke = self.get_item_by_number(joke_params.number)
+            joke = JokeDataAccess(self.session).get_item_by_number(joke_params.number)
 
             if not joke:
                 raise Exception("This Joke doesn't exist")
 
-            joke = self.delete_item_by_number(joke_params.number)
+            joke = JokeDataAccess(self.session).delete_item_by_number(joke_params.number)
 
             return JokeResponse(
                 status_code=200,
-                message='Delete Joke Success',
+                message='Delete Joke Success'
             )
 
         except Exception as ex:
@@ -112,7 +113,22 @@ class JokeService(JokeDataAccess):
             )
 
     def get_db_joke(self, joke_params: JokeParams):
-        pass
+        try:
+            joke = JokeDataAccess(self.session).get_item_by_number(joke_params.number)
+
+            if not joke:
+                raise Exception("This Joke doesn't exist")
+
+            return JokeResponse(
+                status_code=200,
+                message='Get Joke Success',
+                data=joke.__dict__
+            )
+
+        except Exception as ex:
+            return JokeResponse(
+                message=f'{str(ex)} - Error to get Joke'
+            )
 
     def get_remote_joke(self, origin: str, params: JokeRemoteParams):
         try:
