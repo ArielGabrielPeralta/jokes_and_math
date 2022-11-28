@@ -1,5 +1,6 @@
 import uuid
 
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.schema import Column
 from sqlalchemy.types import String, BigInteger, Integer
 
@@ -10,7 +11,7 @@ class Joke(Base):
     __tablename__ = 'joke'
 
     uuid = Column(
-        String,
+        UUID(as_uuid=True),
         primary_key=True,
         unique=True,
         index=True,

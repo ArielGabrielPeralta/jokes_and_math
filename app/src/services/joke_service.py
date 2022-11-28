@@ -1,8 +1,11 @@
+import time
+
 import requests
 from sqlalchemy.orm import Session
 
-from app.src.schema.joke_schema import JokeParams, JokeResponse, JokeRemoteResponse, JokeRemoteParams
-from app.src.services.handler_error_service import handler_errors
+from app.src.models import Joke as JokeModel
+from app.src.schema.joke_schema import JokeParams, JokeResponse, JokeRemoteResponse, JokeRemoteParams, JokeCreate, Joke, \
+    JokeUpdate
 from app.src.utils.settings import Settings
 import logging
 
@@ -17,15 +20,71 @@ class DBSessionMixin:
 
 
 class JokeDataAccess(DBSessionMixin):
-    pass
+    def create_item(self, joke_create: JokeCreate) -> JokeModel:
+        item = JokeModel(**joke_create.dict())
+        self.session.add(item)
+        self.session.commit()
+        return item
+
+    def get_item_by_number(self, number) -> JokeModel:
+        item = self.session.query(JokeModel).filter(JokeModel.number == number).first()
+        return item
+
+    def update_item_by_number(self, joke_update: JokeUpdate) -> JokeModel:
+        item = self.session.query(JokeModel).filter(JokeModel.number == joke_update.number)
+        item.update(joke_update.dict())
+        self.session.commit()
+        return item.first()
 
 
 class JokeService(JokeDataAccess):
     def create_joke(self, joke_params: JokeParams):
-        pass
+        try:
+
+            joke = self.get_item_by_number(joke_params.number)
+
+            status_code = 200
+            message = 'This joke has been created'
+
+            if not joke:
+
+                now = int(time.time())
+                joke_create = JokeCreate(**joke_params.dict(), created_at=now, updated_at=now)
+                joke = self.create_item(joke_create)
+
+                status_code = 201
+                message = 'Create Success'
+
+            return JokeResponse(
+                status_code=status_code,
+                message=message,
+                data=joke.__dict__
+            )
+
+        except Exception as ex:
+            return JokeResponse(
+                message=f'{str(ex)} - Error to create Joke'
+            )
 
     def update_joke(self, joke_params: JokeParams):
-        pass
+        try:
+            joke = self.get_item_by_number(joke_params.number)
+
+            if not joke:
+                raise Exception("This Joke doesn't exist")
+
+            joke = self.update_item_by_number(JokeUpdate(**joke_params.dict(), updated_at=int(time.time())))
+
+            return JokeResponse(
+                status_code=200,
+                message='Update Joke Success',
+                data=joke.__dict__
+            )
+
+        except Exception as ex:
+            return JokeResponse(
+                message=f'{str(ex)} - Error to update Joke'
+            )
 
     def delete_joke(self, joke_params: JokeParams):
         pass

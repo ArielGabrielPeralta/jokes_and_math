@@ -21,9 +21,10 @@ class Joke(JokeBase):
 
 class JokeCreate(JokeBase):
     created_at: Optional[int]
+    updated_at: Optional[int]
 
 
-class JokeUpdated(JokeBase):
+class JokeUpdate(JokeBase):
     updated_at: Optional[int]
 
 
