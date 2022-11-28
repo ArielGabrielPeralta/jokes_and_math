@@ -36,6 +36,12 @@ class JokeDataAccess(DBSessionMixin):
         self.session.commit()
         return item.first()
 
+    def delete_item_by_number(self, number: int):
+        item = self.session.query(JokeModel).filter(JokeModel.number == number)
+        item.delete()
+        self.session.commit()
+        return True
+
 
 class JokeService(JokeDataAccess):
     def create_joke(self, joke_params: JokeParams):
@@ -87,7 +93,23 @@ class JokeService(JokeDataAccess):
             )
 
     def delete_joke(self, joke_params: JokeParams):
-        pass
+        try:
+            joke = self.get_item_by_number(joke_params.number)
+
+            if not joke:
+                raise Exception("This Joke doesn't exist")
+
+            joke = self.delete_item_by_number(joke_params.number)
+
+            return JokeResponse(
+                status_code=200,
+                message='Delete Joke Success',
+            )
+
+        except Exception as ex:
+            return JokeResponse(
+                message=f'{str(ex)} - Error to delete Joke'
+            )
 
     def get_db_joke(self, joke_params: JokeParams):
         pass
