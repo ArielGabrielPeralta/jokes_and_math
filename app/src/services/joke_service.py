@@ -1,7 +1,7 @@
 import requests
 from sqlalchemy.orm import Session
 
-from app.src.schema.joke_schema import JokeParams, JokeResponse, JokeRemoteResponse
+from app.src.schema.joke_schema import JokeParams, JokeResponse, JokeRemoteResponse, JokeRemoteParams
 from app.src.services.handler_error_service import handler_errors
 from app.src.utils.settings import Settings
 import logging
@@ -33,17 +33,17 @@ class JokeService(JokeDataAccess):
     def get_db_joke(self, joke_params: JokeParams):
         pass
 
-    def get_remote_joke(self, origin: str):
+    def get_remote_joke(self, origin: str, params: JokeRemoteParams):
         try:
             joke = None
 
             if origin.lower() == "chuck":
 
-                joke = self.chuck_joke()
+                joke = self.chuck_joke(params)
 
             elif origin.lower() == "dad":
 
-                joke = self.dad_joke()
+                joke = self.dad_joke(params)
 
             else:
                 raise Exception(f'API {origin} not Found')
@@ -60,24 +60,47 @@ class JokeService(JokeDataAccess):
                 message=f"'{str(ex)}' - 'Error to get joke from API'"
             )
 
-    def dad_joke(self):
+    def dad_joke(self, remote_params: JokeRemoteParams):
+
         url = settings.DAD_API
-        request = requests.get(url=url, headers={"Accept": "text/plain"})
+        params = None
+        if remote_params.pokemon:
+            url += '/search'
+            params = {"term": remote_params.pokemon,
+                      "limit": 1}
+
+        request = requests.get(url=url, headers={"Accept": "application/json"}, params=params)
 
         if request.status_code != 200:
             raise Exception(f'Error to get Joke from {url}')
 
-        joke = request.text
+        request = request.json()
+
+        joke = request.get("joke")
+        if not joke:
+            joke = request.get("results")[0].get("joke") if request.get("results") else None
 
         return joke
 
-    def chuck_joke(self):
+    def chuck_joke(self, remote_params: JokeRemoteParams):
+
         url = settings.CHUCK_API
-        request = requests.get(url=url)
+        params = None
+
+        if remote_params.pokemon:
+            url += '/search'
+            params = {"query": remote_params.pokemon}
+        else:
+            url += '/random'
+        request = requests.get(url=url, params=params)
 
         if request.status_code != 200:
             raise Exception(f'Error to get Joke from {url}')
 
-        joke = request.json().get('value')
+        request = request.json()
+
+        joke = request.get('value')
+        if not joke:
+            joke = request.get("result")[0].get('value')
 
         return joke
