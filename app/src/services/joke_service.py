@@ -101,6 +101,6 @@ class JokeService(JokeDataAccess):
 
         joke = request.get('value')
         if not joke:
-            joke = request.get("result")[0].get('value')
+            joke = request.get("result")[0].get('value') if request.get("result") else None
 
         return joke
