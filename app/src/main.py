@@ -2,7 +2,11 @@ from fastapi import FastAPI, Request
 from app.src.controllers import router
 from app.src.services.handler_error_service import handler_errors
 from app.src.utils.settings import Settings
+from app.src.utils.connection import db_engine
+from app.src import models
 from fastapi.middleware.cors import CORSMiddleware
+
+models.Base.metadata.create_all(bind=db_engine)
 
 settings = Settings()
 
@@ -28,7 +32,6 @@ route_exclude_middleware = [
 # Include routes
 app.include_router(router)
 
-# models.Base.metadata.create_all(bind=engine)
 
 @app.middleware("http")
 async def oauth2_authorization(request: Request, call_next):
