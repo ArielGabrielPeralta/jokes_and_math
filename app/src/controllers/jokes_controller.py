@@ -1,7 +1,7 @@
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from app.src.schema.joke_schema import JokeResponse, JokeParams
+from app.src.schema.joke_schema import JokeResponse, JokeParams, JokeRemoteResponse
 from app.src.services.joke_service import JokeService
 from app.src.utils.connection import get_connection
 
@@ -28,6 +28,6 @@ def get_db_joke(joke_params: JokeParams = Depends(), session: Session = Depends(
     return JokeService(session).get_db_joke(joke_params)
 
 
-@router.get("/jokes/remote/{origin}", status_code=200, tags=["Jokes"])
+@router.get("/jokes/remote/{origin}", response_model=JokeRemoteResponse, status_code=200, tags=["Jokes"])
 def get_remote_joke(origin: str, session: Session = Depends(get_connection)):
     return JokeService(session).get_remote_joke(origin)

@@ -14,3 +14,7 @@ class Settings(BaseSettings):
     db_port: str = os.getenv('DB_PORT')
 
     APP_PATH: str = os.getenv('APP_PATH')
+
+    # APIs
+    CHUCK_API: str = os.getenv('CHUCK_API')
+    DAD_API: str = os.getenv('DAD_API')

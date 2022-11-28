@@ -31,3 +31,9 @@ class JokeResponse(BaseModel):
     status_code: int = 200
     message: str
     data: Optional[Joke]
+
+
+class JokeRemoteResponse(BaseModel):
+    status_code: int = 200
+    message: str
+    joke: Optional[str]

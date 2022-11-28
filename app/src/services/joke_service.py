@@ -1,6 +1,8 @@
+import requests
 from sqlalchemy.orm import Session
 
-from app.src.schema.joke_schema import JokeParams
+from app.src.schema.joke_schema import JokeParams, JokeResponse, JokeRemoteResponse
+from app.src.services.handler_error_service import handler_errors
 from app.src.utils.settings import Settings
 import logging
 
@@ -32,4 +34,50 @@ class JokeService(JokeDataAccess):
         pass
 
     def get_remote_joke(self, origin: str):
-        pass
+        try:
+            joke = None
+
+            if origin.lower() == "chuck":
+
+                joke = self.chuck_joke()
+
+            elif origin.lower() == "dad":
+
+                joke = self.dad_joke()
+
+            else:
+                raise Exception(f'API {origin} not Found')
+
+            return JokeRemoteResponse(
+                status_code=200,
+                message=f"Get Joke Success",
+                joke=joke
+            )
+
+        except Exception as ex:
+            return JokeRemoteResponse(
+                status_code=400,
+                message=f"'{str(ex)}' - 'Error to get joke from API'"
+            )
+
+    def dad_joke(self):
+        url = settings.DAD_API
+        request = requests.get(url=url, headers={"Accept": "text/plain"})
+
+        if request.status_code != 200:
+            raise Exception(f'Error to get Joke from {url}')
+
+        joke = request.text
+
+        return joke
+
+    def chuck_joke(self):
+        url = settings.CHUCK_API
+        request = requests.get(url=url)
+
+        if request.status_code != 200:
+            raise Exception(f'Error to get Joke from {url}')
+
+        joke = request.json().get('value')
+
+        return joke
