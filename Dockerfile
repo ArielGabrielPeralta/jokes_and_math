@@ -13,6 +13,4 @@ COPY test_main.py /code/
 
 RUN mkdir -p /code/jokes_and_math/
 
-# RUN pytest
-
 CMD ["uvicorn", "app.src.main:app", "--host", "0.0.0.0", "--port", "3000", "--reload"]
