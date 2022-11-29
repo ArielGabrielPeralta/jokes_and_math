@@ -6,7 +6,7 @@ from fastapi import Response, status
 from sqlalchemy.orm import Session
 
 from app.src.models import Joke as JokeModel
-from app.src.schema.joke_schema import JokeParams, JokeResponse, JokeRemoteResponse, JokeRemoteParams, JokeCreate, Joke, \
+from app.src.schema.joke_schema import JokeParams, JokeResponse, JokeRemoteResponse, JokeRemoteParams, JokeCreate, \
     JokeUpdate
 from app.src.utils.settings import Settings
 
@@ -103,7 +103,7 @@ class JokeService(DBSessionMixin):
             if not joke:
                 raise Exception("This Joke doesn't exist")
 
-            joke = JokeDataAccess(self.session).delete_item_by_number(joke_params.number)
+            JokeDataAccess(self.session).delete_item_by_number(joke_params.number)
 
             return JokeResponse(
                 status_code=200,
@@ -135,7 +135,6 @@ class JokeService(DBSessionMixin):
 
     def get_remote_joke(self, origin: str, params: JokeRemoteParams):
         try:
-            joke = None
 
             if origin.lower() == "chuck":
 
