@@ -17,3 +17,16 @@
 
 - <code>docker build -t joke_and_math .</code>
 - <code> docker run -d --name joke_and_math --env-file=./envs/.env_docker --add-host host.internal.docker:host-gateway -p 3000:3000 joke_and_math:latest</code>
+
+### If you wish use MongoDB or other noSQL database: 
+```
+import motor.motor_asyncio
+
+MONGO_DETAILS = "mongodb://localhost:27017"
+
+client = motor.motor_asyncio.AsyncIOMotorClient(MONGO_DETAILS)
+
+database = client.jokes
+
+joke_collection = database.get_collection("joke_collection")
+```
