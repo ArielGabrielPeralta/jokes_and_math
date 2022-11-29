@@ -1,13 +1,14 @@
 import time
-
 import requests
+import logging
+
+from fastapi import Response, status
 from sqlalchemy.orm import Session
 
 from app.src.models import Joke as JokeModel
 from app.src.schema.joke_schema import JokeParams, JokeResponse, JokeRemoteResponse, JokeRemoteParams, JokeCreate, Joke, \
     JokeUpdate
 from app.src.utils.settings import Settings
-import logging
 
 logging.basicConfig(level=logging.INFO)
 
@@ -45,15 +46,17 @@ class JokeDataAccess(DBSessionMixin):
 
 
 class JokeService(DBSessionMixin):
-    def create_joke(self, joke_params: JokeParams):
+    def create_joke(self, joke_params: JokeParams, response: Response):
         try:
 
             joke = JokeDataAccess(self.session).get_item_by_number(joke_params.number)
 
             status_code = 200
+            response.status_code = status.HTTP_200_OK
             message = 'This joke has been created'
 
             if not joke:
+                response.status_code = status.HTTP_201_CREATED
                 now = int(time.time())
                 joke_create = JokeCreate(**joke_params.dict(), created_at=now, updated_at=now)
                 joke = JokeDataAccess(self.session).create_item(joke_create)
