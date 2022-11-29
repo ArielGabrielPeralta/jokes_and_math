@@ -30,3 +30,13 @@ database = client.jokes
 
 joke_collection = database.get_collection("joke_collection")
 ```
+
+### Poject:
+
+- <http://localhost:3000/>
+
+#### Jokes:
+![img.png](img.png)
+
+#### Math:
+![img_1.png](img_1.png)
