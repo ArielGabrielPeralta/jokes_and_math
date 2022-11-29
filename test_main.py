@@ -43,3 +43,25 @@ def test_get_joke():
     response = response.get("data")
     assert response.get("number") == 1
     assert response.get("joke") == "How do you drown a hipster? Throw him in the mainstream."
+
+
+# Test Math
+
+def test_get_least_common_multiple():
+    params = {
+        "numbers": [100, 3, 47]
+    }
+    response = client.get("/math/least-common-multiple", params=params)
+    assert response.status_code == 200
+    response = response.json()
+    assert response.get("data") == 14100
+
+
+def test_get_number_plus():
+    params = {
+        "number": 11
+    }
+    response = client.get("/math/number-plus", params=params)
+    assert response.status_code == 200
+    response = response.json()
+    assert response.get("data") == 12

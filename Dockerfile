@@ -13,6 +13,6 @@ COPY ./envs/* /envs/
 
 RUN mkdir -p /code/jokes_and_math/
 
-#RUN pytest -v
+RUN pytest -v
 
 CMD ["uvicorn", "app.src.main:app", "--host", "0.0.0.0", "--port", "3000"]
